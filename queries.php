@@ -5,7 +5,7 @@ require "connectDB.req.php";
 $sql = "SELECT * from categories;";
 $categs = $pdo -> query($sql);
 
-echo "<h1>Catégories<h1><br>";
+echo "<h1>Catégories</h1><br>";
 while ($categ = $categs -> fetch()) {
   echo $categ['category']."<br>";
 }
