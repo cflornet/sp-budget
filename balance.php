@@ -1,23 +1,28 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-	<meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-	<title>Budget</title>
-	<?
-		require "connectDB.req.php";
+	<meta charset="utf-8">"
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+		<title>Budget</title>
+		<?
+			require_once "connectDB.req.php";
+	
+			$sql = 'SELECT DATE_FORMAT(transactionDate,"%Y-%m") label,ROUND(SUM(transactionAmount),0) y FROM transactions GROUP BY DATE_FORMAT(transactionDate,"%Y-%m")';
+			$grp = $pdo -> query($sql);
+	
+			$dataPoints = array();
+			echo "<br><br><br><br>";
 
-		$sql = 'SELECT DATE_FORMAT(transactionDate,"%Y-%m") label,SUM(transactionAmount) y FROM transactions GROUP BY DATE_FORMAT(transactionDate,"%Y-%m")';
-		$grp = $pdo -> query($sql);
-
-		$dataPoints = array();
-		foreach($grp as $row)
-		{
-        	array_push($dataPoints, array("label"=> $row->label, "y"=> $row->y));
-    	}
+			$bal = 0;
+			while ($row = $grp -> fetch()) 
+			{
+				//echo "label: ".$row['label']." y: ".$categ['y'];
+				$bal = $bal + $row['y'];
+        		array_push($dataPoints, array("label"=> $row['label'], "y"=> $bal));
+    		}
 	?>
 	<script>
 		window.onload = function () 
@@ -29,7 +34,7 @@
 				theme: "light2", // "light1", "light2", "dark1", "dark2"
 				title: 
 				{
-					text: "Total Balance"
+					text: "Total balance"
 				},
 				axisY: 
 				{
@@ -37,7 +42,7 @@
 					includeZero: true
 				},
 				data: [{
-					type: "column",
+					type: "spline",
 					dataPoints: <?php echo json_encode($dataPoints, JSON_NUMERIC_CHECK); ?>
 				}]
 			});
@@ -101,15 +106,16 @@
 							<div class="col-md-12">
 								Balance:
 								<?
-									require "connectDB.req.php";
+									require_once "connectDB.req.php";
 
 									$sql = "SELECT SUM(transactionAmount) ta FROM transactions;";
 									$totam = $pdo -> query($sql);
 
 									while ($tot = $totam -> fetch()) 
 									{
-											echo $tot['ta'];
-										}
+										$fmt = new NumberFormatter( 'de_DE', NumberFormatter::CURRENCY );
+										echo $fmt->formatCurrency($tot['ta'], "EUR");
+									}
 								?>
 							</div>
 						</div>

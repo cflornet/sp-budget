@@ -8,17 +8,17 @@
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 	<title>Budget</title>
 	<?
-		require "connectDB.req.php";
+		require_once "connectDB.req.php";
 		if (isset($_POST['sbm']))
 		{
 			//echo "<br><br><br><br><br>Category:".$_POST['cat'];
 			if($_POST['acc'] == 2)
 			{
-				$transactionAmount = $_POST['trn'] * -1;
+				$transactionAmount = $_POST['trn'] * -1; // Expense - les dépenses sont négatives
 			}
 			else
 			{
-				$transactionAmount = $_POST['trn'];
+				$transactionAmount = $_POST['trn']; // Income - les entrées sont positives
 			}
 			$idCategory = $_POST['cat'];		
 			$idPayment = $_POST['pay'];
@@ -118,7 +118,7 @@
 				    					<label for="cat">Category</label>
 				    					<select class="form-control" id="cat" name="cat">
 											<?
-												require "connectDB.req.php";
+												require_once "connectDB.req.php";
 	
 												$sql = "SELECT * FROM categories ORDER BY category;";
 												$categs = $pdo -> query($sql);
@@ -136,7 +136,7 @@
 				    					<label for="pay">Payment</label>
 				    					<select class="form-control" id="pay" name="pay">
 											<?
-												require "connectDB.req.php";
+												require_once "connectDB.req.php";
 	
 												$sql = "SELECT * FROM payments ORDER BY paymentMethod;";
 												$payments = $pdo -> query($sql);
@@ -166,7 +166,7 @@
 								<div class="col-md-12">
 									<div class="form-group">
 										<label for="pay">Payment</label>
-										<input type="number" class="form-control" name="trn" required>
+										<input type="number" class="form-control" name="trn" require_onced>
 									</div>
 								</div>
 							</div>
@@ -185,30 +185,34 @@
 					<div class="card-body">
 						<h6 class="card-title">Data</h6>
 						<div class="table-responsive">
-							<table class="table" id="tbp">
+
+							<table class="table sortable" id="tbp">
 								<thead>
 									<tr>
 										<th>Date</th>
 										<th>Category</th>
 										<th>Payment</th>
 										<th>Accounting</th>
-										<th>Ammount</th>
+										<th style=text-align:right;>Ammount</th>
 									</tr>
 								</thead>
 								<tbody>
 									<?
-										require "connectDB.req.php";
+										require_once "connectDB.req.php";
 										$sql = "SELECT t.transactionDate td,c.category ct,p.paymentMethod pm,CASE WHEN t.transactionAmount < 0 THEN 'Expense' ELSE 'Income' END ac,transactionAmount ta FROM transactions t,categories c,payments p WHERE t.idCategory = c.idCategory AND t.idPayment = p.idPayment ORDER BY t.transactionDate;";
+                                                                                // Cette requête utilise de nonms de table avec points. Cela aide lorsque deux tables ou plus ont des colonnes du même nom. 
 											$trns = $pdo -> query($sql);
-
+											//setlocale(LC_MONETARY, 'nl_NL.UTF-8');											
 											while ($trn = $trns -> fetch()) 
 												{
+													$fmt = new NumberFormatter( 'de_DE', NumberFormatter::CURRENCY );
+													
 	  												echo "<tr>
 	  														<td>".$trn['td']."</td>
 	  														<td>".$trn['ct']."</td>
 	  														<td>".$trn['pm']."</td>
 	  														<td>".$trn['ac']."</td>
-	  														<td>".$trn['ta']."</td>
+	  														<td align=right>".$fmt->formatCurrency($trn['ta'], "EUR")."</td>
 	  													  </tr>";
 	  											}
 									?>
@@ -224,6 +228,7 @@
 	<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
 	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
-	<script src="//cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js"></script>
+    <script src="sorttable.js"></script>
 </body>
 </html>
